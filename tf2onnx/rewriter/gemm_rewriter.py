@@ -20,10 +20,6 @@ def rewrite_gemm(g, ops):
     # pattern0: alpha*A*B + beta*C
     pattern0 = \
         OpTypePattern('Add', name='add', inputs=[
-            OpTypePattern('Mul', name='mul2', inputs=[
-                OpTypePattern('Const', name='beta'),
-                OpTypePattern('*', name='C'),
-            ]),
             OpTypePattern('Mul', name='mul1', inputs=[
                 OpTypePattern('Const', name='alpha'),
                 OpTypePattern('MatMul', name='matmul', inputs=[
@@ -31,7 +27,12 @@ def rewrite_gemm(g, ops):
                     OpTypePattern('*', name='B'),
                 ]),
             ]),
+            OpTypePattern('Mul', name='mul2', inputs=[
+                OpTypePattern('Const', name='beta'),
+                OpTypePattern('*', name='C'),
+            ]),
         ])
+
 
     # pattern1: alpha*A*B + C
     pattern1 = \
@@ -71,7 +72,6 @@ def rewrite_gemm(g, ops):
 
     patternList = [pattern0, pattern1, pattern2, pattern3]
 
-    # patternID = 1000
     for patternID, tempPattern in enumerate(patternList):
         matcher = GraphMatcher(tempPattern, allow_reorder=True)
         match_results = list(matcher.match_ops(ops))
@@ -108,6 +108,7 @@ def rewrite_gemm(g, ops):
                 # if the pattern is 3, do nothing
                 gemm = g.make_node("Gemm", inputs=[a_edge_name, b_edge_name, c_edge_name],
                                    attr=attr4makenode,
+                                   # outputs=[add_node.output[0]],
                                    shapes=[g.get_shape(add_node.output[0])],
                                    dtypes=[g.get_dtype(add_node.output[0])])
                 ops.remove(add_node)
