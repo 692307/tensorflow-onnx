@@ -2274,7 +2274,8 @@ class BackendTests(Tf2OnnxBackendTestBase):
         _ = tf.identity(y, name=_TFOUTPUT)
         self._run_test_case([_OUTPUT], {_INPUT: x_val})
 
-    def test_gemm(self):
+    # test for gemm pattern0: alpha*A*B + beta*C
+    def test_gemm_pattern0(self):
         x_val1 = np.array([[1., 2.], [4., 5.]], dtype=np.float32)
         x_val2 = np.array([[7., 8.], [10., 11.]], dtype=np.float32)
         x_val3 = np.array([[13., 14.], [16., 17.]], dtype=np.float32)
@@ -2283,22 +2284,52 @@ class BackendTests(Tf2OnnxBackendTestBase):
         c = tf.placeholder(tf.float32, x_val3.shape, name=_TFINPUT2)
         alpha = tf.constant(1.0)
         beta = tf.constant(2.0)
-        # pattern0: alpha and beta
         x_ = tf.multiply(alpha, tf.matmul(a, b)) + tf.multiply(beta, c)
         _ = tf.identity(x_, name=_TFOUTPUT)
-        self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2, _INPUT2: x_val3})
-        # pattern1: alpha
+        self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2, _INPUT2: x_val3},
+                            graph_validator=lambda g: check_op_count(g, "Gemm", 1))
+
+    # test for gemm pattern1: alpha*A*B + C
+    def test_gemm_pattern1(self):
+        x_val1 = np.array([[1., 2.], [4., 5.]], dtype=np.float32)
+        x_val2 = np.array([[7., 8.], [10., 11.]], dtype=np.float32)
+        x_val3 = np.array([[13., 14.], [16., 17.]], dtype=np.float32)
+        a = tf.placeholder(tf.float32, x_val1.shape, name=_TFINPUT)
+        b = tf.placeholder(tf.float32, x_val2.shape, name=_TFINPUT1)
+        c = tf.placeholder(tf.float32, x_val3.shape, name=_TFINPUT2)
+        alpha = tf.constant(1.0)
         x_ = tf.multiply(alpha, tf.matmul(a, b)) + c
         _ = tf.identity(x_, name=_TFOUTPUT)
-        self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2, _INPUT2: x_val3})
-        # pattern2: beta
+        self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2, _INPUT2: x_val3},
+                            graph_validator=lambda g: check_op_count(g, "Gemm", 1))
+
+    # test for gemm pattern2: A*B + beta*C
+    def test_gemm_pattern2(self):
+        x_val1 = np.array([[1., 2.], [4., 5.]], dtype=np.float32)
+        x_val2 = np.array([[7., 8.], [10., 11.]], dtype=np.float32)
+        x_val3 = np.array([[13., 14.], [16., 17.]], dtype=np.float32)
+        a = tf.placeholder(tf.float32, x_val1.shape, name=_TFINPUT)
+        b = tf.placeholder(tf.float32, x_val2.shape, name=_TFINPUT1)
+        c = tf.placeholder(tf.float32, x_val3.shape, name=_TFINPUT2)
+        beta = tf.constant(2.0)
         x_ = tf.matmul(a, b) + tf.multiply(beta, c)
         _ = tf.identity(x_, name=_TFOUTPUT)
-        self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2, _INPUT2: x_val3})
-        # pattern3:
+        self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2, _INPUT2: x_val3},
+                            graph_validator=lambda g: check_op_count(g, "Gemm", 1))
+
+    # test for gemm pattern3: A*B + C
+    def test_gemm_pattern3(self):
+        x_val1 = np.array([[1., 2.], [4., 5.]], dtype=np.float32)
+        x_val2 = np.array([[7., 8.], [10., 11.]], dtype=np.float32)
+        x_val3 = np.array([[13., 14.], [16., 17.]], dtype=np.float32)
+        a = tf.placeholder(tf.float32, x_val1.shape, name=_TFINPUT)
+        b = tf.placeholder(tf.float32, x_val2.shape, name=_TFINPUT1)
+        c = tf.placeholder(tf.float32, x_val3.shape, name=_TFINPUT2)
         x_ = tf.matmul(a, b) + c
         _ = tf.identity(x_, name=_TFOUTPUT)
-        self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2, _INPUT2: x_val3})
+        self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2, _INPUT2: x_val3},
+                            graph_validator=lambda g: check_op_count(g, "Gemm", 1))
+
 
 if __name__ == '__main__':
     unittest_main()
