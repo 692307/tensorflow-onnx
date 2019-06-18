@@ -70,13 +70,28 @@ def rewrite_gemm(g, ops):
             OpTypePattern('*', name='C'),
         ])
 
-    patternList = [pattern0, pattern1, pattern2, pattern3]
+    # pattern4: beta*C + alpha*A*B
+    pattern4 = \
+        OpTypePattern('Add', name='add', inputs=[
+            OpTypePattern('Mul', name='mul2', inputs=[
+                OpTypePattern('Const', name='beta'),
+                OpTypePattern('*', name='C'),
+            ]),
+            OpTypePattern('Mul', name='mul1', inputs=[
+                OpTypePattern('Const', name='alpha'),
+                OpTypePattern('MatMul', name='matmul', inputs=[
+                    OpTypePattern('*', name='A'),
+                    OpTypePattern('*', name='B'),
+                ]),
+            ])
+        ])
+
+    patternList = [pattern0, pattern1, pattern2, pattern3, pattern4]
 
     for patternID, tempPattern in enumerate(patternList):
         matcher = GraphMatcher(tempPattern, allow_reorder=True)
         match_results = list(matcher.match_ops(ops))
         if len(match_results)>0:
-            print(patternID,patternID)
             for match in match_results:
                 add_node = match.get_op('add')
                 matmul_node = match.get_op("matmul")
@@ -89,7 +104,7 @@ def rewrite_gemm(g, ops):
 
                 attr4makenode = {}
 
-                if patternID == 0:  # pattern0: alpha*A*B + beta*C
+                if patternID == 0 or patternID ==4:  # pattern 0 and 4: alpha*A*B + beta*C and beta*C + alpha*A*B
                     mul2_node = match.get_op("mul2")
                     mul1_node = match.get_op("mul1")
                     alpha = match.get_op("alpha").get_tensor_value()
