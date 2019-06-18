@@ -30,7 +30,7 @@ def rewrite_gemm(g, ops):
             OpTypePattern('Mul', name='mul2', inputs=[
                 OpTypePattern('Const', name='beta'),
                 OpTypePattern('*', name='C'),
-            ]),
+            ])
         ])
 
 
@@ -76,6 +76,7 @@ def rewrite_gemm(g, ops):
         matcher = GraphMatcher(tempPattern, allow_reorder=True)
         match_results = list(matcher.match_ops(ops))
         if len(match_results)>0:
+            print(patternID,patternID)
             for match in match_results:
                 add_node = match.get_op('add')
                 matmul_node = match.get_op("matmul")
