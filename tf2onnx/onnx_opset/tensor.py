@@ -868,16 +868,26 @@ class BatchToSpace:
         # T out = BatchToSpaceND(T input, int32 block_shape, int32 crops)
         input_tensor = node.inputs[0]
         blocksize = node.inputs[1].get_tensor_value()
-        crops = node.inputs[2].get_tensor_value()
+        # crops = node.inputs[2].get_tensor_value()
 
         utils.make_sure(len(ctx.get_shape(input_tensor.output[0])) == 4, "only supports 4D for now")
         utils.make_sure(len(blocksize) == 2 and blocksize[0] == blocksize[1],
                         "only support same blocksize at different dims")
+        #make sure the shape of crop is [2,2]
+        utils.make_sure(len(node.inputs[2].output_shapes)==1 and node.inputs[2].output_shapes[0][0]==2 and node.inputs[2].output_shapes[0][1]==2,
+                        "the dimension of crop must be [2,2]")
 
         # NHWC TO CNHW, so onnx op will work on "N" which is the same as tensorflow
         trans1 = ctx.make_node("Transpose", input_tensor.output, {"perm": [3, 0, 1, 2]})
         reorganize_node = ctx.make_node(node.type, trans1.output, attr={"blocksize": blocksize[0]})
         trans2 = ctx.make_node("Transpose", reorganize_node.output, {"perm": [1, 2, 3, 0]})
+
+        #create crop node
+        trans_crop = ctx.make_node("Transpose", node.inputs[2].output, {"perm": [1, 0]})
+        split = ctx.make_node("Split", trans_crop.output)
+        fetch_const = ctx.make_const("index", np.array([0], dtype=np.int64))
+        gather_starts = ctx.make_node("Gather", [split.output[0], fetch_const.output[0]])
+        gather_ends = ctx.make_node("Gather", [split.output[1], fetch_const.output[1]])
 
         # implement crop logic, the data format is NHWC
         slice_axis = [1, 2]

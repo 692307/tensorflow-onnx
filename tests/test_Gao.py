@@ -139,22 +139,42 @@ class BackendTests(Tf2OnnxBackendTestBase):
     #     self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2, _INPUT2: x_val3},
     #                         graph_validator=lambda g: check_op_count(g, "Gemm", 1))
 
-    def test_batch_to_spacend(self):
-        block_size = [2, 2]
-        crop = [[0, 1], [2, 1]]
-        input_val = np.random.random_sample([40, 3, 5, 100]).astype(np.float32)
-        input_x = tf.placeholder(dtype=tf.float32, shape=input_val.shape, name=_TFINPUT)  # NHWC
-        _ = tf.batch_to_space_nd(input_x, block_size, crop, name=_TFOUTPUT)
-        self._run_test_case([_OUTPUT], {_INPUT: input_val})
-
-    # def test_batch_to_spacend_New(self):
+    # def test_batch_to_spacend(self):
     #     block_size = [2, 2]
-    #     crop_value = [[0, 1], [2, 1]]
-    #     crop = tf.placeholder(dtype=tf.int32, shape=[2, 2])
+    #     crop = [[0, 1], [2, 1]]
     #     input_val = np.random.random_sample([40, 3, 5, 100]).astype(np.float32)
     #     input_x = tf.placeholder(dtype=tf.float32, shape=input_val.shape, name=_TFINPUT)  # NHWC
     #     _ = tf.batch_to_space_nd(input_x, block_size, crop, name=_TFOUTPUT)
-    #     self._run_test_case([_OUTPUT], feed_dict={_INPUT: input_val, crop: crop_value})
+    #     self._run_test_case([_OUTPUT], {_INPUT: input_val})
+
+    # def test_silly_add(self):
+    #     a_values = np.array([[1, 2], [4, 5]], dtype=np.int32)
+    #     b_values = np.array([[1, 2], [4, 5]], dtype=np.int32)
+    #     A = tf.placeholder(dtype=tf.int32, shape=[2, 2], name=_TFINPUT)
+    #     B = tf.placeholder(dtype=tf.int32, shape=[2, 2], name=_TFINPUT1)
+    #     _ = tf.add(A, B, name=_TFOUTPUT)
+    #     self._run_test_case([_OUTPUT], {_INPUT: a_values, _INPUT1: b_values})
+
+    def test_batch_to_spacend_New(self):
+        block_size = [2, 2]
+        crop_value = [[0, 1], [2, 1]]
+
+        crop = tf.placeholder(dtype=tf.int32, shape=[2, 2])
+        input_val = np.random.random_sample([40, 3, 5, 100]).astype(np.float32)
+        input_x = tf.placeholder(dtype=tf.float32, shape=input_val.shape, name=_TFINPUT)  # NHWC
+        _ = tf.batch_to_space_nd(input_x, block_size, crop, name=_TFOUTPUT)
+        self._run_test_case([_OUTPUT], feed_dict={_INPUT: input_val, crop: crop_value})
+
+    # @check_onnxruntime_incompatibility("Add")
+    # def test_add_bcast1(self):
+    #     # example taken from onnx doc
+    #     x1_val = np.random.randn(3, 4, 5).astype(np.float32)
+    #     x2_val = np.random.randn(5).astype(np.float32)
+    #     x1 = tf.placeholder(tf.float32, x1_val.shape, name="input")
+    #     x2 = tf.placeholder(tf.float32, x2_val.shape, name=_TFINPUT1)
+    #     x_ = tf.add(x1, x2)
+    #     _ = tf.identity(x_, name=_TFOUTPUT)
+    #     self._run_test_case([_OUTPUT], {_INPUT: x1_val, _INPUT1: x2_val})
 
 if __name__ == '__main__':
     unittest_main()
