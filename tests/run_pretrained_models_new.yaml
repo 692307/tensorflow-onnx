@@ -1,0 +1,11 @@
+mask_rcnn_resnet50_atrous_coco:
+  url: http://download.tensorflow.org/models/object_detection/mask_rcnn_resnet50_atrous_coco_2018_01_28.tar.gz
+  model: mask_rcnn_resnet50_atrous_coco_2018_01_28/frozen_inference_graph.pb
+  input_get: get_beach
+  inputs:
+    "image_tensor:0": [1, 224, 224, 3]
+  outputs:
+    - detection_boxes:0
+    - detection_scores:0
+    - num_detections:0
+    - detection_classes:0
