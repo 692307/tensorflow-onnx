@@ -73,7 +73,7 @@ benchtf-conv:
     - output:0
 
 benchtf-convbn:
-  disabled: true # some if from training isn't removed
+#  disabled: true # some if from training isn't removed
   model: models/convbn-layers/frozen.pb
   input_get: get_ramp
   inputs:
@@ -90,7 +90,7 @@ benchtf-ae0:
     - output:0
 
 benchtf-lstm:
-  disabled: true
+#  disabled: true
   model: models/lstm/frozen.pb
   input_get: get_ramp
   inputs:
@@ -99,7 +99,7 @@ benchtf-lstm:
     - output:0
 
 benchtf-gru:
-  disabled: true
+#  disabled: true
   model: models/gru/frozen.pb
   input_get: get_ramp
   inputs:
@@ -123,7 +123,7 @@ inception_v3_slim:
   atol: 0.00001
 
 googlenet_v1_nonslim:
-  disabled: true
+#  disabled: true
   url: https://storage.googleapis.com/download.tensorflow.org/models/inception5h.zip
   model: tensorflow_inception_graph.pb
   input_get: get_beach
@@ -133,7 +133,7 @@ googlenet_v1_nonslim:
     - softmax2:0
 
 googlenet_resnet_v2:
-  disabled: true
+#  disabled: true
   url: https://storage.googleapis.com/download.tensorflow.org/models/inception_resnet_v2_2016_08_30_frozen.pb.tar.gz
   model: inception_resnet_v2_2016_08_30_frozen.pb
   input_get: get_beach
@@ -205,7 +205,7 @@ mobilenet_v1_75_192:
 
 nasnet-a_mobile_224:
   # has only checkpoint format
-  disabled: true
+#  disabled: true
   url: https://storage.googleapis.com/download.tensorflow.org/models/nasnet-a_mobile_04_10_2017.tar.gz
   model: fixme
   input_get: get_beach
@@ -216,7 +216,7 @@ nasnet-a_mobile_224:
 
 vgg-16:
   # has only checkpoint format
-  disabled: true
+#  disabled: true
   url: http://download.tensorflow.org/models/vgg_16_2016_08_28.tar.gz
   model: fixme
   input_get: get_beach
@@ -239,7 +239,7 @@ resnet50_v2_nchw: # NOTE: Tensorflow 1.9.0 fails
 
 
 resnet50_v2_nhwc:
-  disabled: true # FIXME: numerical results are correct but shape=(64,) for tf and (64,1) for lotus
+#  disabled: true # FIXME: numerical results are correct but shape=(64,) for tf and (64,1) for lotus
   model_type: saved_model
   url: http://download.tensorflow.org/models/official/20181001_resnet/savedmodels/resnet_v2_fp32_savedmodel_NHWC.tar.gz
   model: resnet_v2_fp32_savedmodel_NHWC/1538687283
@@ -251,7 +251,7 @@ resnet50_v2_nhwc:
     - softmax_tensor:0
 
 resnet50_fp16_v2:
-  disabled: true # FIXME: need to handle float16 constants
+#  disabled: true # FIXME: need to handle float16 constants
   model_type: saved_model
   url: http://download.tensorflow.org/models/official/20181001_resnet/savedmodels/resnet_v2_fp16_savedmodel_NHWC.tar.gz
   model: resnet_v2_fp16_savedmodel_NHWC/1538686978
@@ -264,7 +264,7 @@ resnet50_fp16_v2:
 
 
 resnet50_v1:
-  disabled: true # works, disabled because its nearly the same as resnet50_v2_nchw
+#  disabled: true # works, disabled because its nearly the same as resnet50_v2_nchw
   skip_tensorflow: true # tensorflow fails: Default MaxPoolingOp only supports NHWC on device type CPU
   model_type: saved_model
   url: http://download.tensorflow.org/models/official/20180601_resnet_v1_imagenet_savedmodel.tar.gz
@@ -292,7 +292,7 @@ style-transfer:
 
 ssd_mobilenet_v1_coco:
   # issues with control flow
-  disabled: true
+#  disabled: true
   url: http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v1_coco_2017_11_17.tar.gz
   model: ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb
   input_get: get_beach
@@ -306,7 +306,7 @@ ssd_mobilenet_v1_coco:
 
 ssd_mobilenet_v2_coco:
   # issues with control flow
-  disabled: true
+#  disabled: true
   url: http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz
   model: ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb
   input_get: get_beach
@@ -320,7 +320,7 @@ ssd_mobilenet_v2_coco:
 
 ssdlite_mobilenet_v2_coco:
   # issues with control flow
-  disabled: true
+#  disabled: true
   url: http://download.tensorflow.org/models/object_detection/ssdlite_mobilenet_v2_coco_2018_05_09.tar.gz
   model: ssdlite_mobilenet_v2_coco_2018_05_09/frozen_inference_graph.pb
   input_get: get_beach
@@ -334,7 +334,7 @@ ssdlite_mobilenet_v2_coco:
 
 ssd_inception_v2_coco:
   # issues with control flow
-  disabled: true
+#  disabled: true
   url: http://download.tensorflow.org/models/object_detection/ssd_inception_v2_coco_2017_11_17.tar.gz
   model: ssd_inception_v2_coco_2017_11_17/frozen_inference_graph.pb
   input_get: get_beach
@@ -345,244 +345,3 @@ ssd_inception_v2_coco:
     - detection_scores:0
     - num_detections:0
     - detection_classes:0
-
-ssd_mobilenet_v1_0.75_depth_coco:
-  url: http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v1_0.75_depth_300x300_coco14_sync_2018_07_03.tar.gz
-  model: ssd_mobilenet_v1_0.75_depth_300x300_coco14_sync_2018_07_03/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-ssd_mobilenet_v1_quantized_coco:
-  url: http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v1_quantized_300x300_coco14_sync_2018_07_18.tar.gz
-  model: ssd_mobilenet_v1_quantized_300x300_coco14_sync_2018_07_18/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-ssd_mobilenet_v1_0.75_depth_quantized_coco:
-  url: http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v1_0.75_depth_quantized_300x300_coco14_sync_2018_07_18.tar.gz
-  model: ssd_mobilenet_v1_0.75_depth_quantized_300x300_coco14_sync_2018_07_18/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-ssd_mobilenet_v1_ppn_coco:
-  url: http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v1_ppn_shared_box_predictor_300x300_coco14_sync_2018_07_03.tar.gz
-  model: ssd_mobilenet_v1_ppn_shared_box_predictor_300x300_coco14_sync_2018_07_03/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-ssd_mobilenet_v1_fpn_coco:
-  url: http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03.tar.gz
-  model: ssd_mobilenet_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-ssd_mobilenet_v2_quantized_coco:
-  url: http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz
-  model: ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-faster_rcnn_inception_v2_coco:
-  url: http://download.tensorflow.org/models/object_detection/faster_rcnn_inception_v2_coco_2018_01_28.tar.gz
-  model: faster_rcnn_inception_v2_coco_2018_01_28/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-faster_rcnn_resnet50_coco:
-  url: http://download.tensorflow.org/models/object_detection/faster_rcnn_resnet50_coco_2018_01_28.tar.gz
-  model: faster_rcnn_resnet50_coco_2018_01_28/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-faster_rcnn_resnet50_lowproposals_coco:
-  url: http://download.tensorflow.org/models/object_detection/faster_rcnn_resnet50_lowproposals_coco_2018_01_28.tar.gz
-  model: faster_rcnn_resnet50_lowproposals_coco_2018_01_28/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-rfcn_resnet101_coco:
-  url: http://download.tensorflow.org/models/object_detection/rfcn_resnet101_coco_2018_01_28.tar.gz
-  model: rfcn_resnet101_coco_2018_01_28/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-faster_rcnn_resnet101_coco:
-  url: http://download.tensorflow.org/models/object_detection/faster_rcnn_resnet101_coco_2018_01_28.tar.gz
-  model: faster_rcnn_resnet101_coco_2018_01_28/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-faster_rcnn_resnet101_lowproposals_coco:
-  url: http://download.tensorflow.org/models/object_detection/faster_rcnn_resnet101_lowproposals_coco_2018_01_28.tar.gz
-  model: faster_rcnn_resnet101_lowproposals_coco_2018_01_28/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-faster_rcnn_inception_resnet_v2_atrous_coco:
-  url: http://download.tensorflow.org/models/object_detection/faster_rcnn_inception_resnet_v2_atrous_coco_2018_01_28.tar.gz
-  model: faster_rcnn_inception_resnet_v2_atrous_coco_2018_01_28/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-faster_rcnn_inception_resnet_v2_atrous_lowproposals_coco:
-  url: http://download.tensorflow.org/models/object_detection/faster_rcnn_inception_resnet_v2_atrous_lowproposals_coco_2018_01_28.tar.gz
-  model: faster_rcnn_inception_resnet_v2_atrous_lowproposals_coco_2018_01_28/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-faster_rcnn_nas:
-  url: http://download.tensorflow.org/models/object_detection/faster_rcnn_nas_coco_2018_01_28.tar.gz
-  model: faster_rcnn_nas_coco_2018_01_28/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-faster_rcnn_nas_lowproposals_coco:
-  url: http://download.tensorflow.org/models/object_detection/faster_rcnn_nas_lowproposals_coco_2018_01_28.tar.gz
-  model: faster_rcnn_nas_lowproposals_coco_2018_01_28/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-mask_rcnn_inception_resnet_v2_atrous_coco:
-  url: http://download.tensorflow.org/models/object_detection/mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28.tar.gz
-  model: mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-mask_rcnn_inception_v2_coco:
-  url: http://download.tensorflow.org/models/object_detection/mask_rcnn_inception_v2_coco_2018_01_28.tar.gz
-  model: mask_rcnn_inception_v2_coco_2018_01_28/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-mask_rcnn_resnet101_atrous_coco:
-  url: http://download.tensorflow.org/models/object_detection/mask_rcnn_resnet101_atrous_coco_2018_01_28.tar.gz
-  model: mask_rcnn_resnet101_atrous_coco_2018_01_28/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
-mask_rcnn_resnet50_atrous_coco:
-  url: http://download.tensorflow.org/models/object_detection/mask_rcnn_resnet50_atrous_coco_2018_01_28.tar.gz
-  model: mask_rcnn_resnet50_atrous_coco_2018_01_28/frozen_inference_graph.pb
-  input_get: get_beach
-  inputs:
-    "image_tensor:0": [1, 224, 224, 3]
-  outputs:
-    - detection_boxes:0
-    - detection_scores:0
-    - num_detections:0
-    - detection_classes:0
-
