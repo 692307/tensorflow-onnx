@@ -105,46 +105,44 @@ class BackendTests(Tf2OnnxBackendTestBase):
         kwargs["constant_fold"] = False
         return self.run_test_case(feed_dict, [], output_names_with_port, **kwargs)
 
-    # test for gemm pattern0: alpha*A*B + beta*C
-    def test_gemm_pattern0(self):
-        max_number = 10
-        m = np.random.randint(max_number)
-        n = np.random.randint(max_number)
-        k = np.random.randint(max_number)
-        x_val1 = np.random.rand(m, n).astype("float32")
-        x_val2 = np.random.rand(n, k).astype("float32")
-        x_val3 = np.random.rand(m, k).astype("float32")
-
-        a = tf.placeholder(tf.float32, x_val1.shape, name=_TFINPUT)
-        b = tf.placeholder(tf.float32, x_val2.shape, name=_TFINPUT1)
-        c = tf.placeholder(tf.float32, x_val3.shape, name=_TFINPUT2)
-        alpha = tf.constant(1.0)
-        beta = tf.constant(2.0)
-        mul1 = tf.multiply(alpha, tf.matmul(a, b))
-        mul2 = tf.multiply(beta, c)
-        x_ = mul1 + mul2
-        _ = tf.identity(x_, name=_TFOUTPUT)
-        self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2, _INPUT2: x_val3},
-                            graph_validator=lambda g: check_op_count(g, "Gemm", 1))
-
-    # test for gemm pattern1: alpha*A*B + C
-    def test_gemm_pattern1(self):
-        max_number = 10
-        m = np.random.randint(max_number)
-        n = np.random.randint(max_number)
-        k = np.random.randint(max_number)
-        x_val1 = np.random.rand(m, n).astype("float32")
-        x_val2 = np.random.rand(n, k).astype("float32")
-        x_val3 = np.random.rand(m, k).astype("float32")
-
-        a = tf.placeholder(tf.float32, x_val1.shape, name=_TFINPUT)
-        b = tf.placeholder(tf.float32, x_val2.shape, name=_TFINPUT1)
-        c = tf.placeholder(tf.float32, x_val3.shape, name=_TFINPUT2)
-        alpha = tf.constant(1.0)
-        x_ = tf.multiply(alpha, tf.matmul(a, b)) + c
-        _ = tf.identity(x_, name=_TFOUTPUT)
-        self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2, _INPUT2: x_val3},
-                        graph_validator=lambda g: check_op_count(g, "Gemm", 1))
+    # # test for gemm pattern0: alpha*A*B + beta*C
+    # def test_gemm_pattern0(self):
+    #     max_number = 10
+    #     m = np.random.randint(max_number)
+    #     n = np.random.randint(max_number)
+    #     k = np.random.randint(max_number)
+    #     x_val1 = np.random.rand(m, n).astype("float32")
+    #     x_val2 = np.random.rand(n, k).astype("float32")
+    #     x_val3 = np.random.rand(m, k).astype("float32")
+    #     a = tf.placeholder(tf.float32, x_val1.shape, name=_TFINPUT)
+    #     b = tf.placeholder(tf.float32, x_val2.shape, name=_TFINPUT1)
+    #     c = tf.placeholder(tf.float32, x_val3.shape, name=_TFINPUT2)
+    #     alpha = tf.constant(1.0, dtype=tf.float32)
+    #     beta = tf.constant(2.0, dtype=tf.float32)
+    #     mul1 = tf.multiply(alpha, tf.matmul(a, b))
+    #     mul2 = tf.multiply(beta, c)
+    #     x_ = mul2 + mul1
+    #     _ = tf.identity(x_, name=_TFOUTPUT)
+    #     self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2, _INPUT2: x_val3},
+    #                         graph_validator=lambda g: check_op_count(g, "Gemm", 1))
+    #
+    # # test for gemm pattern1: alpha*A*B + C
+    # def test_gemm_pattern1(self):
+    #     max_number = 10
+    #     m = np.random.randint(max_number)
+    #     n = np.random.randint(max_number)
+    #     k = np.random.randint(max_number)
+    #     x_val1 = np.random.rand(m, n).astype("float32")
+    #     x_val2 = np.random.rand(n, k).astype("float32")
+    #     x_val3 = np.random.rand(m, k).astype("float32")
+    #     a = tf.placeholder(tf.float32, x_val1.shape, name=_TFINPUT)
+    #     b = tf.placeholder(tf.float32, x_val2.shape, name=_TFINPUT1)
+    #     c = tf.placeholder(tf.float32, x_val3.shape, name=_TFINPUT2)
+    #     alpha = tf.constant(1.0, dtype=tf.float32)
+    #     x_ = tf.multiply(alpha, tf.matmul(a, b)) + c
+    #     _ = tf.identity(x_, name=_TFOUTPUT)
+    #     self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2, _INPUT2: x_val3},
+    #                         graph_validator=lambda g: check_op_count(g, "Gemm", 1))
 
     # test for gemm pattern2: A*B + beta*C
     def test_gemm_pattern2(self):
@@ -155,33 +153,49 @@ class BackendTests(Tf2OnnxBackendTestBase):
         x_val1 = np.random.rand(m, n).astype("float32")
         x_val2 = np.random.rand(n, k).astype("float32")
         x_val3 = np.random.rand(m, k).astype("float32")
-
         a = tf.placeholder(tf.float32, x_val1.shape, name=_TFINPUT)
         b = tf.placeholder(tf.float32, x_val2.shape, name=_TFINPUT1)
         c = tf.placeholder(tf.float32, x_val3.shape, name=_TFINPUT2)
-        beta = tf.constant(2.0)
+        beta = tf.constant(2.0, dtype=tf.float32)
         x_ = tf.matmul(a, b) + tf.multiply(beta, c)
         _ = tf.identity(x_, name=_TFOUTPUT)
         self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2, _INPUT2: x_val3},
                             graph_validator=lambda g: check_op_count(g, "Gemm", 1))
 
-    # test for gemm pattern3: A*B + C
-    def test_gemm_pattern3(self):
-        max_number = 10
-        m = np.random.randint(max_number)
-        n = np.random.randint(max_number)
-        k = np.random.randint(max_number)
-        x_val1 = np.random.rand(m, n).astype("float32")
-        x_val2 = np.random.rand(n, k).astype("float32")
-        x_val3 = np.random.rand(m, k).astype("float32")
+    # # test for gemm pattern2: A*B + beta*C
+    # def test_gemm_pattern_arg_not_scalar(self):
+    #     max_number = 10
+    #     m = 2# np.random.randint(max_number)
+    #     n = 2# np.random.randint(max_number)
+    #     k = 2# np.random.randint(max_number)
+    #     x_val1 = np.random.rand(m, n).astype("float32")
+    #     x_val2 = np.random.rand(n, k).astype("float32")
+    #     x_val3 = np.random.rand(m, k).astype("float32")
+    #     a = tf.placeholder(tf.float32, x_val1.shape, name=_TFINPUT)
+    #     b = tf.placeholder(tf.float32, x_val2.shape, name=_TFINPUT1)
+    #     c = tf.placeholder(tf.float32, x_val3.shape, name=_TFINPUT2)
+    #     beta = tf.constant([2.0, 2.0], dtype=tf.float32)
+    #     x_ = tf.matmul(a, b) + tf.multiply(beta, c)
+    #     _ = tf.identity(x_, name=_TFOUTPUT)
+    #     self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2, _INPUT2: x_val3},
+    #                         graph_validator=lambda g: check_op_count(g, "Gemm", 1))
 
-        a = tf.placeholder(tf.float32, x_val1.shape, name=_TFINPUT)
-        b = tf.placeholder(tf.float32, x_val2.shape, name=_TFINPUT1)
-        c = tf.placeholder(tf.float32, x_val3.shape, name=_TFINPUT2)
-        x_ = tf.matmul(a, b) + c
-        _ = tf.identity(x_, name=_TFOUTPUT)
-        self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2, _INPUT2: x_val3},
-                            graph_validator=lambda g: check_op_count(g, "Gemm", 1))
+    # # test for gemm pattern3: A*B + C
+    # def test_gemm_pattern3(self):
+    #     max_number = 10
+    #     m = np.random.randint(max_number)
+    #     n = np.random.randint(max_number)
+    #     k = np.random.randint(max_number)
+    #     x_val1 = np.random.rand(m, n).astype("float32")
+    #     x_val2 = np.random.rand(n, k).astype("float32")
+    #     x_val3 = np.random.rand(m, k).astype("float32")
+    #     a = tf.placeholder(tf.float32, x_val1.shape, name=_TFINPUT)
+    #     b = tf.placeholder(tf.float32, x_val2.shape, name=_TFINPUT1)
+    #     c = tf.placeholder(tf.float32, x_val3.shape, name=_TFINPUT2)
+    #     x_ = tf.matmul(a, b) + c
+    #     _ = tf.identity(x_, name=_TFOUTPUT)
+    #     self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2, _INPUT2: x_val3},
+    #                         graph_validator=lambda g: check_op_count(g, "Gemm", 1))
 
     # # test for temm rewriter when all the variables are int type
     # def test_gemm_int(self):
@@ -202,6 +216,7 @@ class BackendTests(Tf2OnnxBackendTestBase):
     #     _ = tf.identity(x_, name=_TFOUTPUT)
     #     self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2, _INPUT2: x_val3},
     #                          graph_validator=lambda g: check_op_count(g, "Gemm", 1))
+
 
     # @skip_caffe2_backend()
     # @check_opset_min_version(7, "multinomial")
