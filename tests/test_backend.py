@@ -2443,6 +2443,7 @@ class BackendTests(Tf2OnnxBackendTestBase):
         _ = tf.batch_to_space_nd(input_x, block_size, crop, name=_TFOUTPUT)
         self._run_test_case([_OUTPUT], {_INPUT: input_val})
 
+    @check_opset_min_version(10, "Slice in opset 10 can accept dynamic 'starts' and 'ends'")
     def test_batch_to_spacend_with_dynamic_crop(self):
         block_size = [2, 2]
         crops_val = np.array([[0, 1], [2, 1]], dtype=np.int32)
