@@ -300,9 +300,8 @@ class Slice:
             ends = ctx.make_node("Add", [starts, size_processed]).output[0]
 
         ctx.remove_node(node.name)
-        # inputs_map = {"data": input_tensor, "starts": starts, "ends": ends}
-        # kwargs = {**inputs_map, "outputs": node.output}
-        kwargs = {"data": input_tensor, "starts": starts, "ends": ends, "outputs": node.output}
+        inputs_map = {"data": input_tensor, "starts": starts, "ends": ends}
+        kwargs = {**inputs_map, "outputs": node.output}
         _ = GraphBuilder(ctx).make_slice(kwargs, name=node.name)
 
     @classmethod
@@ -1330,11 +1329,7 @@ class ReverseSequence:
         seq_dim = node.get_attr("seq_dim")
         utils.make_sure(seq_dim is not None, "sequence dim must be given in {}".format(node.name))
         seq_dim = seq_dim.i
-        batch_dim = node.get_attr("batch_dim")
-        if batch_dim is not None:
-            batch_dim = batch_dim.i
-        else:
-            batch_dim = 0
+        batch_dim = node.get_attr_value("batch_dim", 0)
 
         ctx.remove_node(node.name)
         node = ctx.make_node(
