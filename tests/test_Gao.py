@@ -107,62 +107,8 @@ class BackendTests(Tf2OnnxBackendTestBase):
         kwargs["constant_fold"] = False
         return self.run_test_case(feed_dict, [], output_names_with_port, **kwargs)
 
-    # @check_opset_min_version(10, "Slice in opset 10 can accept dymaic 'start' and 'ends'")
-    # def test_slice_with_dynamic_starts_and_size(self):
-    #     x_val = np.array([[1, 2, 3, 4], [5, 6, 7, 8]], dtype=np.float32)
-    #     t1_value = np.array([0, 1], dtype=np.int32)
-    #     t2_value = np.array([2, 2], dtype=np.int32)
-    #
-    #     t1 = tf.placeholder(dtype=tf.int32, shape=t1_value.shape, name=_TFINPUT1)
-    #     t2 = tf.placeholder(dtype=tf.int32, shape=t2_value.shape, name=_TFINPUT2)
-    #     x0 = tf.placeholder(tf.float32, x_val.shape, name=_TFINPUT)
-    #
-    #     x_ = tf.slice(x0, t1, t2)
-    #     _ = tf.identity(x_, name=_TFOUTPUT)
-    #
-    #     self._run_test_case([_OUTPUT], {_INPUT: x_val, _INPUT1: t1_value, _INPUT2: t2_value})
-
-    # def test_equal(self):
-    #     x_val1 = np.array([4, 2, 4, 1], dtype=np.int32).reshape((2, 2))
-    #     x_val2 = np.array([2, 4, 4, 1], dtype=np.int32).reshape((2, 2))
-    #     x1 = tf.placeholder(tf.int32, [2, 2], name=_TFINPUT)
-    #     x2 = tf.placeholder(tf.int32, [2, 2], name=_TFINPUT1)
-    #     mi = tf.equal(x1, x2)
-    #     _ = tf.identity(mi, name=_TFOUTPUT)
-    #     self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2})
-    #
-    #     tf.reset_default_graph()
-    #     x_val1 = np.array([4, 2, 4, 1], dtype=np.float32).reshape((2, 2))
-    #     x_val2 = np.array([2, 4, 4, 1], dtype=np.float32).reshape((2, 2))
-    #     x1 = tf.placeholder(tf.float32, [2, 2], name=_TFINPUT)
-    #     x2 = tf.placeholder(tf.float32, [2, 2], name=_TFINPUT1)
-    #     mi = tf.equal(x1, x2)
-    #     _ = tf.identity(mi, name=_TFOUTPUT)
-    #     self._run_test_case([_OUTPUT], {_INPUT: x_val1, _INPUT1: x_val2})
-
-    # @check_opset_min_version(10, "Slice in opset 10 can accept dymaic 'start' and 'ends'")
-    # def test_slice_with_non_const(self):
-    #     x_val = np.array([[1, 2, 3, 4], [5, 6, 7, 8]], dtype=np.float32)
-    #     t1 = np.array([0, 1], dtype=np.int32)
-    #     t2 = np.array([2, 2], dtype=np.int32)
-    #
-    #     t1_ = tf.placeholder(tf.int32, t1.shape, name=_TFINPUT1)
-    #     t2_ = tf.placeholder(tf.int32, t2.shape, name=_TFINPUT2)
-    #     x0 = tf.placeholder(tf.float32, x_val.shape, name=_TFINPUT)
-    #
-    #     x_ = tf.slice(x0, t1_, t2_)
-    #     _ = tf.identity(x_, name=_TFOUTPUT)
-    #     self._run_test_case([_OUTPUT], {_INPUT: x_val, _INPUT1: t1, _INPUT2: t2})
-
-    # def test_batch_to_spacend(self):
-    #     block_size = [2, 2]
-    #     crop = [[0, 1], [2, 1]]
-    #     input_val = np.random.random_sample([40, 3, 5, 100]).astype(np.float32)
-    #     input_x = tf.placeholder(dtype=tf.float32, shape=input_val.shape, name=_TFINPUT)  # NHWC
-    #     _ = tf.batch_to_space_nd(input_x, block_size, crop, name=_TFOUTPUT)
-    #     self._run_test_case([_OUTPUT], {_INPUT: input_val})
-
-    def test_batch_to_spacend_with_dynamic_crop(self):
+    @check_opset_min_version(10, "Slice in opset 10 can accept dynamic 'starts' and 'ends'")
+    def test_batch_to_spacend_with_dynamic_crop_top_is_zero(self):
         block_size = [2, 2]
         crop_value = np.array([[0, 1], [2, 1]], dtype=np.int32)
         input_val = np.random.random_sample([40, 3, 5, 100]).astype(np.float32)
@@ -172,18 +118,27 @@ class BackendTests(Tf2OnnxBackendTestBase):
         _ = tf.batch_to_space_nd(input_x, block_size, crop, name=_TFOUTPUT)
         self._run_test_case([_OUTPUT], feed_dict={_INPUT: input_val, _INPUT1: crop_value})
 
-    # def test_gather(self):
-    #     x_val = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=np.float32)
-    #     idx = np.array([1, 0, 2], dtype=np.int32)
-    #     idx_flattened = np.array([i * x_val.shape[1] + idx for i in range(0, x_val.shape[0])])
-    #     x = tf.placeholder(tf.float32, x_val.shape, name=_TFINPUT)
-    #     x_ = tf.gather(tf.reshape(x, [-1]), tf.constant(idx_flattened))
-    #     _ = tf.identity(x_, name=_TFOUTPUT)
-    #     self._run_test_case([_OUTPUT], {_INPUT: x_val})
-    #
-    # def test_split_Gao(self):
-    #     crop_value = [[0, 1], [2, 1]]
-    #     crop = tf.placeholder(dtype=tf.int32, shape=[2, 2])
+    @check_opset_min_version(10, "Slice in opset 10 can accept dynamic 'starts' and 'ends'")
+    def test_batch_to_spacend_with_dynamic_crop_right_is_zero(self):
+        block_size = [2, 2]
+        crops_val = np.array([[0, 1], [2, 0]], dtype=np.int32)
+        input_val = np.random.random_sample([40, 3, 5, 100]).astype(np.float32)
+
+        input_x = tf.placeholder(dtype=tf.float32, shape=input_val.shape, name=_TFINPUT)
+        crops = tf.placeholder(dtype=tf.int32, shape=[2, 2], name=_TFINPUT1)
+        _ = tf.batch_to_space_nd(input_x, block_size, crops, name=_TFOUTPUT)
+        self._run_test_case([_OUTPUT], feed_dict={_INPUT: input_val, _INPUT1: crops_val})
+
+    @check_opset_min_version(10, "Slice in opset 10 can accept dynamic 'starts' and 'ends'")
+    def test_batch_to_spacend_with_dynamic_crop_ends_are_zero(self):
+        block_size = [2, 2]
+        crops_val = np.array([[1, 0], [2, 0]], dtype=np.int32)
+        input_val = np.random.random_sample([40, 3, 5, 100]).astype(np.float32)
+
+        input_x = tf.placeholder(dtype=tf.float32, shape=input_val.shape, name=_TFINPUT)
+        crops = tf.placeholder(dtype=tf.int32, shape=[2, 2], name=_TFINPUT1)
+        _ = tf.batch_to_space_nd(input_x, block_size, crops, name=_TFOUTPUT)
+        self._run_test_case([_OUTPUT], feed_dict={_INPUT: input_val, _INPUT1: crops_val})
 
 if __name__ == '__main__':
     unittest_main()
