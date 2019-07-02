@@ -141,6 +141,7 @@ class BackendTests(Tf2OnnxBackendTestBase):
     #     self._run_test_case([_OUTPUT], feed_dict={_INPUT: input_val, _INPUT1: crops_val})
 
     @check_opset_min_version(10, "Slice in opset 10 can accept dynamic 'starts' and 'ends'")
+    @check_target('rs6', 'batch_to_space_nd')
     def test_batch_to_spacend_with_dynamic_crop_for_int64(self):
         block_size = [2, 2]
         crops_val = np.array([[1, 0], [2, 0]], dtype=np.int64)
