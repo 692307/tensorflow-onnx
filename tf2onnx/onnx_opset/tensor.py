@@ -1139,23 +1139,67 @@ class SpaceToBatch:
         # T out = SpaceToBatchND(T input, int32 block_shape, int32 crops)
         input_tensor = node.inputs[0]
         blocksize = node.inputs[1].get_tensor_value()
-        paddings = node.inputs[2].get_tensor_value()
 
         utils.make_sure(len(ctx.get_shape(input_tensor.output[0])) == 4, "only supports 4D for now")
         utils.make_sure(len(blocksize) == 2 and blocksize[0] == blocksize[1],
                         "only support same blocksize at different dims")
+        utils.make_sure(node.inputs[2].output_shapes == [[2, 2]],
+                        "only support the paddings with shape [[2,2]]")
 
         shapes = [ctx.get_shape(node.output[0])]
         dtypes = [ctx.get_dtype(node.output[0])]
-        ctx.remove_node(node.name)
 
-        # implement pads logic, the data format is NHWC
-        top, bottom = paddings[0]
-        left, right = paddings[1]
-        pads = [0, top, left, 0,
-                0, bottom, right, 0]
+        if ctx.get_node_by_output(node.input[2]).is_const():
+            paddings = node.inputs[2].get_tensor_value()
+            # implement pads logic, the data format is NHWC
+            top, bottom = paddings[0]
+            left, right = paddings[1]
+            pads = [0, top, left, 0,
+                    0, bottom, right, 0]
+            attr = {"pads": pads}
+            ctx.remove_node(node.name)
+            pad_op = ctx.make_node("Pad", input_tensor.output, attr=attr)
+        else:
+            print('padding is not const!')
+            paddings_type = ctx.get_dtype(node.input[2])
+            paddings_np_type = utils.map_onnx_to_numpy_type(paddings_type)
 
-        pad_op = ctx.make_node("Pad", input_tensor.output, attr={"pads": pads})
+            # Prepare a const array:
+            base_value = np.array([[0, 1, 0, 0], [0, 0, 1, 0]]).astype(paddings_np_type)
+            base_const = ctx.make_const(utils.make_name("Const"), base_value)
+            mul_node = ctx.make_node("Mul", [node.inputs[2].output[0], base_const.output[0]])
+
+            # shape
+            shape_val = np.array([1, 8]).astype(np.int32)
+            shape_const = ctx.make_const(utils.make_name("Const"), shape_val)
+            mul_reshape_node = ctx.make_node("Reshape", [mul_node.output[0], shape_const.output[0]])
+
+            # # By split op, the original padding node is divided into two parts.
+            # split_node = ctx.make_node("Split", [node.inputs[2].output[0]], output_count=2, attr={"axis": 0})
+            # top_and_bottom_node = ctx.make_node("Split", [split_node.output[0]], output_count=2, attr={"axis": 1})
+            # left_and_right_node = ctx.make_node("Split", [split_node.output[1]], output_count=2, attr={"axis": 1})
+
+            # # Create 4 base nodes
+            # base_top_value = np.array([0, 1, 0, 0, 0, 0, 0, 0]).astype(paddings_np_type)
+            # base_left_value = np.array([0, 0, 1, 0, 0, 0, 0, 0]).astype(paddings_np_type)
+            # base_bottom_value = np.array([0, 0, 0, 0, 0, 1, 0, 0]).astype(paddings_np_type)
+            # base_right_value = np.array([0, 0, 0, 0, 0, 0, 1, 0]).astype(paddings_np_type)
+            # base_top_const = ctx.make_const(utils.make_name("Const"), base_top_value)
+            # base_left_const = ctx.make_const(utils.make_name("Const"), base_left_value)
+            # base_bottom_const = ctx.make_const(utils.make_name("Const"), base_bottom_value)
+            # base_right_const = ctx.make_const(utils.make_name("Const"), base_right_value)
+            # top_node = ctx.make_node("Mul", [base_top_const.output[0], top_and_bottom_node.output[0]])
+            # left_node = ctx.make_node("Mul", [base_left_const.output[0], left_and_right_node.output[0]])
+            # bottom_node = ctx.make_node("Mul", [base_bottom_const.output[0], top_and_bottom_node.output[1]])
+            # right_node = ctx.make_node("Mul", [base_right_const.output[0], left_and_right_node.output[1]])
+            # # Obtain pads node by Add ops
+            # top_and_bottom_sum_node = ctx.make_node("Add", [top_node.output[0], bottom_node.output[0]])
+            # left_and_right_sum_node = ctx.make_node("Add", [left_node.output[0], right_node.output[0]])
+            # pads_node = ctx.make_node("Add", [top_and_bottom_sum_node.output[0], left_and_right_sum_node.output[0]])
+
+            attr = {"pads": mul_reshape_node.output[0]}
+            ctx.remove_node(node.name)
+            pad_op = ctx.make_node("Pad", [input_tensor.output, mul_reshape_node.output[0]])
 
         # NHWC TO CNHW, so onnx op will work on "N" which is the same as tensorflow
         trans1 = ctx.make_node("Transpose", pad_op.output, {"perm": [3, 0, 1, 2]})
