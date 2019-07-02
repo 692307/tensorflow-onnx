@@ -1129,28 +1129,22 @@ class BatchToSpace:
                 kwargs = {**inputs_map, "outputs": node.output}
                 ctx.remove_node(node.name)
                 GraphBuilder(ctx).make_slice(kwargs, name=node.name, dtypes=dtypes, shapes=shapes)
+        
         else:
             crops_type = ctx.get_dtype(node.input[2])
             crops_np_type = utils.map_onnx_to_numpy_type(crops_type)
-
             # Make the node crops being transposed and respectively obtained its two rows by split op
             crops_trans = ctx.make_node("Transpose", node.inputs[2].output, {"perm": [1, 0]})
             trans_split = ctx.make_node("Split", [crops_trans.output[0]], output_count=2, attr={"axis": 0})
-
-            # Create the starts node
             starts = ctx.make_node("Squeeze", [trans_split.output[0]], attr={"axes": [0]})
-
             # Create the original node for ends
             ends_ori = ctx.make_node("Squeeze", [trans_split.output[1]], attr={"axes": [0]})
-
             # create zero const node
             zero_value = np.array([0]).astype(crops_np_type)
             zero_const = ctx.make_const(utils.make_name("Const"), zero_value)
-
             # Obtain a node by comparing the ends_ori with zero
             ends_ori_equal_zero = ctx.make_node("Equal", [ends_ori.output[0], zero_const.output[0]])
             ends_ori_equal_zero = ctx.make_node("Cast", [ends_ori_equal_zero.output[0]], attr={"to": crops_type})
-
             # Create int max const node
             int_max_value = np.array([utils.get_max_value(crops_np_type)]).astype(crops_np_type)
             int_max_const = ctx.make_const(utils.make_name("largest_int_val"), int_max_value)
@@ -1158,16 +1152,13 @@ class BatchToSpace:
             # Then, ends_ori_equal_zero are copied into two parts, i.e. ends_for_zero and ends_for_nonzero
             # (1). Create ends_for_zero node
             ends_for_zero = ctx.make_node("Mul", [ends_ori_equal_zero.output[0], int_max_const.output[0]])
-
             # (2). Create ends_for_nonzero node
             neg_one_value = np.array([-1]).astype(crops_np_type)
             neg_one_const = ctx.make_const(utils.make_name("const"), neg_one_value)
             ends_ori_equal_zero_inv = ctx.make_node("Add", [ends_ori_equal_zero.output[0], neg_one_const.output[0]])
             ends_for_nonzero = ctx.make_node("Mul", [ends_ori_equal_zero_inv.output[0], ends_ori.output[0]])
-
             # Add (1) and (2) to obtain ends
             ends = ctx.make_node("Add", [ends_for_zero.output[0], ends_for_nonzero.output[0]])
-
             # Create slice_axis const node
             slice_axis_value = np.array([1, 2]).astype(crops_np_type)
             slice_axis_const = ctx.make_const(utils.make_name("Const"), slice_axis_value)
