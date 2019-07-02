@@ -1169,7 +1169,7 @@ class BatchToSpace:
             ends = ctx.make_node("Add", [ends_for_zero.output[0], ends_for_nonzero.output[0]])
 
             # Create slice_axis const node
-            slice_axis_value = np.array([1, 2]).astype(np.int32)
+            slice_axis_value = np.array([1, 2]).astype(crops_np_type)
             slice_axis_const = ctx.make_const(utils.make_name("Const"), slice_axis_value)
 
             attr = {"axes": slice_axis_const.output[0], "ends": ends.output[0], "starts": starts.output[0]}
